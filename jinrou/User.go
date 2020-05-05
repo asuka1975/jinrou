@@ -15,7 +15,7 @@ type User struct {
 	onDied func()
 }
 
-func (u *User) die() {
+func (u *User) Die() {
 	if u.canDie() {
 		u.onDied()
 	}
@@ -29,12 +29,16 @@ func (u *User) setProtected() {
 	u.protected = true
 }
 
+func (u *User) AddOnDied(handler func()) {
+	u.onDied = handler
+}
+
 type Villager struct {
 	User
 }
 
 func newVillager(name string) *Villager {
-	v := Villager{ User { Name: name, Role: "Villager", protected: false, onDied: func(){}} }
+	v := Villager{User{ Name: name, Role: "Villager", protected: false, onDied: func(){}} }
 	return &v
 }
 
@@ -47,7 +51,7 @@ type Werewolf struct {
 }
 
 func newWerewolf(name string) *Werewolf {
-	w := Werewolf{ User{ Name: name, Role: "Werewolf", protected: false, onDied: func(){}} }
+	w := Werewolf{User{ Name: name, Role: "Werewolf", protected: false, onDied: func(){}} }
 	return &w
 }
 
@@ -58,11 +62,11 @@ func (w *Werewolf) Action(other IUser) string {
 
 //TODO add new role
 
-func CreateUser(name string, role string) *IUser {
+func CreateUser(name string, role string) IUser {
 	switch role {
 	case "Werewolf":
-		return interface{}(newWerewolf(name)).(*IUser)
+		return IUser(newWerewolf(name))
 	default:
-		return interface{}(newVillager(name)).(*IUser)
+		return IUser(newVillager(name))
 	}
 }

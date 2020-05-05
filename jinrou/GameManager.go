@@ -4,8 +4,8 @@ type GameManager struct {
 	state IGameState
 }
 
-func newGameManager() *GameManager {
-	return &GameManager{ state: (IGameState)(LoginState{})}
+func NewGameManager() *GameManager {
+	return &GameManager{ state: FirstState()}
 }
 
 func (g *GameManager) Run() {
