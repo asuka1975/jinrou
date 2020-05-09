@@ -2,6 +2,7 @@ package jinrou
 
 type GameManager struct {
 	state IGameState
+	jinrou *Jinrou
 }
 
 func NewGameManager() *GameManager {

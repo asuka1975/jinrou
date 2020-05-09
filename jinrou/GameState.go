@@ -54,18 +54,6 @@ func (g GameState) Execute() {
 }
 
 func (g GameState) NextState() IGameState {
-	return VotingState{}
-}
-
-type VotingState struct {
-
-}
-
-func (v VotingState) Execute() {
-	fmt.Println("Voting")
-}
-
-func (v VotingState) NextState() IGameState {
 	return FinishState{}
 }
 

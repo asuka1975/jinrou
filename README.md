@@ -34,7 +34,6 @@
   - ログイン画面State
   - 確認画面
   - ゲーム画面State
-  - 投票State
   - クリア画面State
 
 - GameStateManager
@@ -44,6 +43,7 @@
 
   - 夜State
   - 昼State
+  - 投票State
 
 - User 名前, 役割, 
 
