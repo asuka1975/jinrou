@@ -13,7 +13,7 @@
  - 人狼APIサーバ
  - Webアプリケーション
  
- 図は今後作成
+ ![architecture](./READMEimg/architecture.png)
 
 
 ## ゲームの流れ
