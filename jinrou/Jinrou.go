@@ -2,8 +2,8 @@ package jinrou
 
 import (
 	"sort"
+	"sync/atomic"
 )
-import "sync"
 
 type behavior int
 
@@ -38,15 +38,17 @@ func (c commands) Swap(i int, j int) {
 }
 
 type Jinrou struct {
-	Players  []*Player
-	commands commands
-	session  ISession
-	mtx      sync.Mutex
+	Players      []*Player
+	commands     commands
+	session      ISession
+	commandFence chan command
+	commandCount int32
 }
 
 func NewJinrou(name []string, role []string) *Jinrou {
-	j := &Jinrou{Players: make([]*Player, len(name)), commands: []command{}}
+	j := &Jinrou{Players: make([]*Player, len(name)), commands: []command{}, commandCount: 0}
 	j.session = &Noon{d: j}
+	j.commandFence = make(chan command, len(j.Players))
 	for i := 0; i < len(name); i++ {
 		j.Players[i] = NewPlayer(name[i], role[i])
 	}
@@ -55,13 +57,16 @@ func NewJinrou(name []string, role []string) *Jinrou {
 
 func (j *Jinrou) PushCommand(c command) {
 	go func() {
-		j.mtx.Lock()
-		defer j.mtx.Unlock()
-		j.commands = append(j.commands, c)
+		j.commandFence <- c
 	}()
+	atomic.AddInt32(&(j.commandCount), 1)
 }
 
 func (j *Jinrou) HandleCommand() {
+	for i := 0; i < int(j.commandCount); i++ {
+		j.commands = append(j.commands, <-j.commandFence)
+	}
+	j.commandCount = 0
 	sort.Sort(j.commands)
 	for _, v := range j.commands {
 		switch v.b {

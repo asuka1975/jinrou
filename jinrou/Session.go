@@ -54,8 +54,7 @@ func (e *Evening) Act(actor string, target string) {
 	go func() {
 		e.wait <- target
 	}()
-	c := &(e.waitCount)
-	atomic.AddInt32(c, 1)
+	atomic.AddInt32(&(e.waitCount), 1)
 }
 
 func (e *Evening) Done() {
