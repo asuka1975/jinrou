@@ -1,7 +1,6 @@
 package jinrou
 
 import (
-	"fmt"
 	"sort"
 )
 import "sync"
@@ -108,7 +107,6 @@ func (j *Jinrou) actionPlayer(actorName string, targetName string) {
 }
 
 func (j *Jinrou) Execute(name string) {
-	fmt.Printf("Vote: %s\n", name)
 	for i, v := range j.Players {
 		if v.name == name {
 			j.Players[i].State = dead

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"jinrou/jinrou"
 	"math/rand"
+	"time"
 )
 
 type J jinrou.Jinrou
@@ -22,7 +23,7 @@ func main() {
 	j := jinrou.NewJinrou(
 		[]string{"John", "Alice", "Bob", "Jay", "Shohn"},
 		[]string{"Werewolf", "Knight", "Villager", "Villager", "Villager"})
-
+	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < 5; i++ {
 		session := j.GetSession()
 		fmt.Println(session.String())

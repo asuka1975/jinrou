@@ -1,10 +1,8 @@
 package jinrou
 
 import (
-	"fmt"
 	"math/rand"
-	"sync"
-	"time"
+	"sync/atomic"
 )
 
 type ISession interface {
@@ -35,9 +33,10 @@ func (n Noon) Done() {
 }
 
 type Evening struct {
-	d    *Jinrou
-	vote map[string]int
-	mtx  sync.Mutex
+	d         *Jinrou
+	vote      map[string]int
+	wait      chan string
+	waitCount int32
 }
 
 func (e *Evening) Next() ISession {
@@ -49,38 +48,43 @@ func (e *Evening) String() string {
 }
 
 func (e *Evening) Act(actor string, target string) {
+	if e.wait == nil {
+		e.wait = make(chan string, len(e.d.Players))
+	}
 	go func() {
-		e.mtx.Lock()
-		defer e.mtx.Unlock()
+		e.wait <- target
+	}()
+	c := &(e.waitCount)
+	atomic.AddInt32(c, 1)
+}
+
+func (e *Evening) Done() {
+	for i := 0; i < int(e.waitCount); i++ {
+		target := <-e.wait
 		_, ok := e.vote[target]
 		if ok {
 			e.vote[target]++
 		} else {
 			e.vote[target] = 1
 		}
-	}()
-}
-
-func (e *Evening) Done() {
-	count := 0
-	for _, v := range e.vote {
-		count += v
-	}
-	rand.Seed(time.Now().UnixNano())
-	l := len(e.d.Players)
-	for i := 0; i < l-count; i++ {
-		e.Act("", e.d.Players[rand.Intn(l)].name)
 	}
 	max := 0
-	maxName := ""
-	fmt.Println(e.vote)
-	for k, v := range e.vote {
+	for _, v := range e.vote {
 		if max < v {
 			max = v
-			maxName = k
 		}
 	}
-	e.d.Execute(maxName)
+	var names []string
+	for k, v := range e.vote {
+		if max == v {
+			names = append(names, k)
+		}
+	}
+	if len(names) == 0 {
+		e.d.Execute(e.d.Players[rand.Intn(len(e.d.Players))].name)
+	} else {
+		e.d.Execute(names[rand.Intn(len(names))])
+	}
 }
 
 type Night struct {
