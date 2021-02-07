@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"jinrou/jinrou"
 	"math/rand"
+	"net/http"
 	"time"
 )
 
@@ -19,6 +20,8 @@ func (j *J) String() string {
 
 func main() {
 	fmt.Println("Game Start!")
+	server := jinrou.NewMatchingServer()
+	http.ListenAndServe(":8080", server)
 
 	j := jinrou.NewJinrou(
 		[]string{"John", "Alice", "Bob", "Jay", "Shawn"},
