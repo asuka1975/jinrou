@@ -8,10 +8,11 @@ const (
 )
 
 type Player struct {
-	name    string
-	role    IRole
-	Status  playerStatus
-	command *PassiveCommand
+	name       string
+	role       IRole
+	Status     playerStatus
+	command    *PassiveCommand
+	Connection *Connection
 }
 
 func (p *Player) GetName() string {
