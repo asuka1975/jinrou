@@ -1,17 +1,17 @@
 package jinrou
 
-type playerState int
+type playerStatus int
 
 const (
-	dead playerState = iota
+	dead playerStatus = iota
 	alive
 )
 
 type Player struct {
-	name  string
-	role  IRole
-	State playerState
-	Conn  *Connection
+	name    string
+	role    IRole
+	Status  playerStatus
+	command *PassiveCommand
 }
 
 func (p *Player) GetName() string {
@@ -23,15 +23,7 @@ func (p *Player) GetRole() IRole {
 }
 
 func NewPlayer(name string, role string) *Player {
-	p := &Player{name: name, State: alive}
+	p := &Player{name: name, Status: alive, command: nil}
 	p.role = newRole(role, p)
-
-	return p
-}
-
-func newPlayer(name string, role string, connection *Connection) *Player {
-	p := &Player{name: name, State: alive, Conn: connection}
-	p.role = newRole(role, p)
-
 	return p
 }
