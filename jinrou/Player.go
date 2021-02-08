@@ -11,6 +11,7 @@ type Player struct {
 	name  string
 	role  IRole
 	State playerState
+	Conn  *Connection
 }
 
 func (p *Player) GetName() string {
@@ -24,5 +25,13 @@ func (p *Player) GetRole() IRole {
 func NewPlayer(name string, role string) *Player {
 	p := &Player{name: name, State: alive}
 	p.role = newRole(role, p)
+
+	return p
+}
+
+func newPlayer(name string, role string, connection *Connection) *Player {
+	p := &Player{name: name, State: alive, Conn: connection}
+	p.role = newRole(role, p)
+
 	return p
 }

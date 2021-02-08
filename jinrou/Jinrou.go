@@ -1,8 +1,11 @@
 package jinrou
 
 import (
+	"fmt"
+	"math/rand"
 	"sort"
 	"sync/atomic"
+	"time"
 )
 
 type behavior int
@@ -49,6 +52,17 @@ func NewJinrou(name []string, role []string) *Jinrou {
 	j := &Jinrou{Players: make([]*Player, len(name)), commands: []command{}, commandCount: 0}
 	j.session = &Noon{d: j}
 	j.commandFence = make(chan command, len(j.Players))
+	for i := 0; i < len(name); i++ {
+		j.Players[i] = NewPlayer(name[i], role[i])
+	}
+	return j
+}
+
+func newJinrou(name []string, role []string, players []*Player) *Jinrou {
+	j := &Jinrou{Players: make([]*Player, len(name)), commands: []command{}, commandCount: 0}
+	j.session = &Noon{d: j}
+	j.commandFence = make(chan command, len(j.Players))
+	j.Players = players
 	for i := 0; i < len(name); i++ {
 		j.Players[i] = NewPlayer(name[i], role[i])
 	}
@@ -130,4 +144,46 @@ func (j *Jinrou) GetSession() ISession {
 
 func (j *Jinrou) IsEnd() bool {
 	return false
+}
+
+func (j *Jinrou) String() string {
+	s := ""
+	for _, p := range j.Players {
+		s += fmt.Sprintf("name:%s role:%s state:%d\n", p.GetName(), p.GetRole().GetName(), p.State)
+	}
+	return s
+}
+
+func (j *Jinrou) Run() {
+	rand.Seed(time.Now().UnixNano())
+	for i := 0; i < 5; i++ {
+		session := j.GetSession()
+		fmt.Println(session.String())
+		switch session.String() {
+		case "Morning":
+
+		case "Noon":
+
+		case "Evening":
+			for i := 0; i < len(j.Players); i++ {
+				k := rand.Intn(len(j.Players) - 1)
+				if k >= i {
+					k++
+				}
+				session.Act(j.Players[i].GetName(), j.Players[k].GetName())
+			}
+		case "Night":
+			for i := 0; i < len(j.Players); i++ {
+				k := rand.Intn(len(j.Players) - 1)
+				if k >= i {
+					k++
+				}
+				session.Act(j.Players[i].GetName(), j.Players[k].GetName())
+			}
+		}
+		j_ := Jinrou(*j)
+		fmt.Println(j_.String())
+		session.Done()
+		j.NextSession()
+	}
 }

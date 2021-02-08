@@ -15,24 +15,6 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     func(r *http.Request) bool { return true },
 }
 
-type Client struct {
-	// Conn is a websocket connection of Client
-	conn *websocket.Conn
-	// Dead is a channel when
-	dead *chan bool
-}
-
-func newClient(conn *websocket.Conn, dead *chan bool) Client {
-	return Client{
-		conn,
-		dead,
-	}
-}
-
-func NewClient() Client {
-	return Client{}
-}
-
 type MatchingServer struct {
 	Matcher *Matcher
 	mu      sync.Mutex
@@ -44,7 +26,7 @@ func (s *MatchingServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Print(err)
 	}
 	dead := make(chan bool)
-	client := newClient(conn, &dead)
+	client := NewConnection(conn, &dead)
 	s.mu.Lock()
 	s.Matcher.EnQueue(&client)
 	s.mu.Unlock()
@@ -58,7 +40,7 @@ func (s *MatchingServer) Start() {
 	for {
 		select {
 		case <-ticker.C:
-			s.Matcher.Match()
+			s.Matcher.MatchAndGameStart()
 		}
 	}
 }
