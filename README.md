@@ -64,10 +64,18 @@ UIに専念。人狼APIサーバから受け取ったJSONデータを元にUIの
 - Role 役名，
   - 各役のClass
     - GetName　：　役名
-    - Behave　　：　役固有の行動
-    - Reveal 　　：　役の外からの見え方（占い師の占いで使う）
-    - StrongReveal　：　基本的には役の名前（賢者の占いで使う）
+    - GetAction ：　役固有の行動
 
-  > 生死の状態はPlayerが管理．
+- IActiveCommand 夜の行動（占う等）
+  - NoneCommand : 何もしない
+  - KillCommand : 他のプレイヤーを殺す
+  - ProtectCommand : 他のプレイヤーを守る
+  - PredictCommand : 他のプレイヤーを占う
+
+- PassiveCommand 夜の行動に対するリアクション（Knightに守られる等）
+  - Cancel : ActiveCommandをキャンセルするか
+  - Execute : コマンドの実行
+  
+> 生死の状態はPlayerが管理．
 
 
