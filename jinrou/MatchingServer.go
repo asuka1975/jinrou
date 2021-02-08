@@ -1,7 +1,6 @@
 package jinrou
 
 import (
-	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
@@ -26,21 +25,21 @@ func (s *MatchingServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Print(err)
 	}
 	dead := make(chan bool)
-	client := NewConnection(conn, &dead)
+	connection := NewConnection(conn, &dead)
 	s.mu.Lock()
-	s.Matcher.EnQueue(&client)
+	s.Matcher.EnQueue(&connection)
 	s.mu.Unlock()
 }
 
 func (s *MatchingServer) Start() {
 	defer func() {
-		fmt.Println("matching server end")
+		log.Println("matching server end")
 	}()
 	ticker := time.NewTicker(s.Matcher.MatchingInterval)
 	for {
 		select {
 		case <-ticker.C:
-			s.Matcher.MatchAndGameStart()
+			s.Matcher.Match()
 		}
 	}
 }

@@ -1,7 +1,7 @@
 package jinrou
 
 import (
-	"fmt"
+	"log"
 	"time"
 )
 
@@ -24,13 +24,14 @@ func NewMatcher() Matcher {
 }
 
 func (matcher *Matcher) Match() {
-	fmt.Printf("%v", len(matcher.Queue))
+	log.Printf("%v clients in Queue\n", len(matcher.Queue))
 	for len(matcher.Queue) > matcher.GroupMemberNum {
-		fmt.Println("match")
+		log.Println("match")
 		var players []*Player
 		for j := 0; j < matcher.GroupMemberNum; j++ {
 			connection := matcher.Queue[j]
-			player := newPlayer("time", "Werewolf", connection)
+			player := NewPlayer("time", "Werewolf")
+			player.Connection = connection
 			players = append(players, player)
 			matcher.Queue = matcher.Queue[1:]
 		}
@@ -38,6 +39,6 @@ func (matcher *Matcher) Match() {
 }
 
 func (matcher *Matcher) EnQueue(connection *Connection) {
-	fmt.Println("enqueue")
+	log.Println("enqueue")
 	matcher.Queue = append(matcher.Queue, connection)
 }
