@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"jinrou/jinrou"
+	"net/http"
 )
 
 type J jinrou.Jinrou
@@ -23,6 +24,9 @@ func main() {
 			fmt.Printf("%d: %s\n", i, name)
 		}
 	}
+
+	server := jinrou.NewMatchingServer()
+	http.ListenAndServe(":8080", server)
 
 	names := []string{"John", "Alice", "Bob", "Jay", "Shawn"}
 	j := jinrou.NewJinrou(
