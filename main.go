@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"jinrou/jinrou"
-	"net/http"
 )
 
 type J jinrou.Jinrou
@@ -19,14 +18,16 @@ func (j J) String() string {
 func main() {
 	fmt.Println("Game Start!")
 
-	printNames := func(names []string) {
-		for i, name := range names {
-			fmt.Printf("%d: %s\n", i, name)
+	printNames := func(player *jinrou.Player, players []*jinrou.Player) {
+		for i, p := range players {
+			if player.GetRole().FilterTarget(p) {
+				fmt.Printf("%d: %s\n", i, p.GetName())
+			}
 		}
 	}
 
-	server := jinrou.NewMatchingServer()
-	http.ListenAndServe(":8080", server)
+	//jinrou.NewMatchingServer()
+	//http.ListenAndServe(":8080", server)
 
 	names := []string{"John", "Alice", "Bob", "Jay", "Shawn"}
 	j := jinrou.NewJinrou(
@@ -37,13 +38,13 @@ func main() {
 		fmt.Printf("%s, your turn.\n", player.GetName())
 		switch player.GetRole().GetName() {
 		case "Knight":
-			printNames(names)
+			printNames(player, j.Players)
 			fmt.Printf("Who do you protect?: ")
 			var i int
 			_, _ = fmt.Scanf("%d", &i)
 			commands = append(commands, jinrou.NewActiveCommand(player, j.Players[i]))
 		case "Werewolf":
-			printNames(names)
+			printNames(player, j.Players)
 			fmt.Printf("Who do you kill?: ")
 			var i int
 			_, _ = fmt.Scanf("%d", &i)

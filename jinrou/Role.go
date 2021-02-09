@@ -3,6 +3,7 @@ package jinrou
 type IRole interface {
 	GetAction() Action
 	GetName() string
+	FilterTarget(player *Player) bool
 }
 
 type Villager struct {
@@ -15,6 +16,10 @@ func (v *Villager) GetAction() Action {
 
 func (v *Villager) GetName() string {
 	return "Villager"
+}
+
+func (v *Villager) FilterTarget(_ *Player) bool {
+	return false
 }
 
 func newVillager(name string) *Villager {
@@ -34,6 +39,10 @@ func (w Werewolf) GetName() string {
 	return "Werewolf"
 }
 
+func (w Werewolf) FilterTarget(player *Player) bool {
+	return player.role.GetName() != "Werewolf" && player.Status == alive
+}
+
 func newWerewolf(name string, self *Player) *Werewolf {
 	return &Werewolf{roleName: name, self: self}
 }
@@ -49,6 +58,10 @@ func (k Knight) GetAction() Action {
 
 func (k Knight) GetName() string {
 	return "Knight"
+}
+
+func (k Knight) FilterTarget(player *Player) bool {
+	return player.Status == alive
 }
 
 func newKnight(name string, self *Player) *Knight {
