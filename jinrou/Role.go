@@ -7,7 +7,7 @@ type IRole interface {
 }
 
 type Villager struct {
-	roleName string
+	name string
 }
 
 func (v *Villager) GetAction() Action {
@@ -73,6 +73,40 @@ func (d Diviner) FilterTarget(player *Player) bool {
 	return player.Status == alive
 }
 
+type Lupin struct {
+	name string
+	self *Player
+}
+
+func (l Lupin) GetAction() Action {
+	return Steal
+}
+
+func (l Lupin) GetName() string {
+	return "Lupin"
+}
+
+func (l Lupin) FilterTarget(player *Player) bool {
+	return player.Status == alive
+}
+
+type Shaman struct {
+	name string
+	self *Player
+}
+
+func (s Shaman) GetAction() Action {
+	return Trance
+}
+
+func (s Shaman) GetName() string {
+	return "Shaman"
+}
+
+func (s Shaman) FilterTarget(player *Player) bool {
+	return player.Status == dead
+}
+
 func newRole(name string, self *Player) IRole {
 	switch name {
 	case "Werewolf":
@@ -81,7 +115,11 @@ func newRole(name string, self *Player) IRole {
 		return &Knight{name: name, self: self}
 	case "Diviner":
 		return &Diviner{self: self, name: name}
+	case "Lupin":
+		return &Lupin{self: self, name: name}
+	case "Shaman":
+		return &Shaman{self: self, name: name}
 	default:
-		return &Villager{roleName: name}
+		return &Villager{name: name}
 	}
 }
