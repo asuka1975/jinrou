@@ -78,6 +78,14 @@ func (c ProtectCommand) Execute() {
 	}
 }
 
+type PredictCommand struct {
+	activeCommandImpl
+}
+
+func (c PredictCommand) Execute() {
+	c.self.knowledge.Emplace(c.other)
+}
+
 func NewActiveCommand(self *Player, other *Player) IActiveCommand {
 	action := self.role.GetAction()
 	command := activeCommandImpl{self: self, other: other, action: action, priority: priorities[action]}
@@ -86,6 +94,8 @@ func NewActiveCommand(self *Player, other *Player) IActiveCommand {
 		return KillCommand{command}
 	case Protect:
 		return ProtectCommand{command}
+	case Predict:
+		return PredictCommand{command}
 	default:
 		return NoneCommand{command}
 	}

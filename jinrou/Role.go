@@ -22,13 +22,9 @@ func (v *Villager) FilterTarget(_ *Player) bool {
 	return false
 }
 
-func newVillager(name string) *Villager {
-	return &Villager{roleName: name}
-}
-
 type Werewolf struct {
-	roleName string
-	self     *Player
+	name string
+	self *Player
 }
 
 func (w Werewolf) GetAction() Action {
@@ -41,10 +37,6 @@ func (w Werewolf) GetName() string {
 
 func (w Werewolf) FilterTarget(player *Player) bool {
 	return player.role.GetName() != "Werewolf" && player.Status == alive
-}
-
-func newWerewolf(name string, self *Player) *Werewolf {
-	return &Werewolf{roleName: name, self: self}
 }
 
 type Knight struct {
@@ -64,17 +56,32 @@ func (k Knight) FilterTarget(player *Player) bool {
 	return player.Status == alive
 }
 
-func newKnight(name string, self *Player) *Knight {
-	return &Knight{name: name, self: self}
+type Diviner struct {
+	name string
+	self *Player
+}
+
+func (d Diviner) GetAction() Action {
+	return Predict
+}
+
+func (d Diviner) GetName() string {
+	return "Diviner"
+}
+
+func (d Diviner) FilterTarget(player *Player) bool {
+	return player.Status == alive
 }
 
 func newRole(name string, self *Player) IRole {
 	switch name {
 	case "Werewolf":
-		return newWerewolf(name, self)
+		return &Werewolf{name: name, self: self}
 	case "Knight":
-		return newKnight(name, self)
+		return &Knight{name: name, self: self}
+	case "Diviner":
+		return &Diviner{self: self, name: name}
 	default:
-		return newVillager(name)
+		return &Villager{roleName: name}
 	}
 }
