@@ -1,34 +1,55 @@
 package jinrou
 
 type IRole interface {
-	GetAction() Action
+	GetCommand() CommandCreator
 	GetName() string
 	FilterTarget(player *Player) bool
 }
 
-type Villager struct {
-	name string
+type Villager int
+type Werewolf int
+type Knight int
+type Diviner int
+type Lupin int
+type Shaman int
+
+const (
+	villager Villager = 0
+	werewolf Werewolf = 1
+	knight   Knight   = 2
+	diviner  Diviner  = 3
+	lupin    Lupin    = 4
+	shaman   Shaman   = 5
+)
+
+func (v Villager) GetCommand() CommandCreator {
+	return func(self *Player, other *Player) CommandQueue {
+		return CommandQueue{
+			commands:      nil,
+			priority:      0,
+			enableSession: Night,
+			tag:           nil,
+		}
+	}
 }
 
-func (v *Villager) GetAction() Action {
-	return None
-}
-
-func (v *Villager) GetName() string {
+func (v Villager) GetName() string {
 	return "Villager"
 }
 
-func (v *Villager) FilterTarget(_ *Player) bool {
+func (v Villager) FilterTarget(_ *Player) bool {
 	return false
 }
 
-type Werewolf struct {
-	name string
-	self *Player
-}
-
-func (w Werewolf) GetAction() Action {
-	return Kill
+func (w Werewolf) GetCommand() CommandCreator {
+	return func(self *Player, other *Player) CommandQueue {
+		return CommandQueue{
+			commands:      []IBasicCommand{&KillCommand{commandImpl{self, other}}},
+			priority:      2,
+			enableSession: Night,
+			tag:           Kill,
+		}
+	}
 }
 
 func (w Werewolf) GetName() string {
@@ -39,13 +60,24 @@ func (w Werewolf) FilterTarget(player *Player) bool {
 	return player.role.GetName() != "Werewolf" && player.Status == alive
 }
 
-type Knight struct {
-	name string
-	self *Player
-}
-
-func (k Knight) GetAction() Action {
-	return Protect
+func (k Knight) GetCommand() CommandCreator {
+	return func(self *Player, other *Player) CommandQueue {
+		return CommandQueue{
+			commands: []IBasicCommand{&SetPassiveCommand{
+				commandImpl: commandImpl{self, other},
+				command: &PassiveCommand{
+					Cancel: func(command CommandQueue) bool {
+						action, ok := command.tag.(Action)
+						return ok && action == Kill
+					},
+					Execute: func(self *Player, other *Player) {},
+				},
+			}},
+			priority:      1,
+			enableSession: 0,
+			tag:           nil,
+		}
+	}
 }
 
 func (k Knight) GetName() string {
@@ -56,13 +88,15 @@ func (k Knight) FilterTarget(player *Player) bool {
 	return player.Status == alive
 }
 
-type Diviner struct {
-	name string
-	self *Player
-}
-
-func (d Diviner) GetAction() Action {
-	return Predict
+func (d Diviner) GetCommand() CommandCreator {
+	return func(self *Player, other *Player) CommandQueue {
+		return CommandQueue{
+			commands:      []IBasicCommand{&KnowCommand{commandImpl{self, other}}},
+			priority:      1,
+			enableSession: 0,
+			tag:           nil,
+		}
+	}
 }
 
 func (d Diviner) GetName() string {
@@ -73,13 +107,24 @@ func (d Diviner) FilterTarget(player *Player) bool {
 	return player.Status == alive
 }
 
-type Lupin struct {
-	name string
-	self *Player
-}
-
-func (l Lupin) GetAction() Action {
-	return Steal
+func (l Lupin) GetCommand() CommandCreator {
+	return func(self *Player, other *Player) CommandQueue {
+		return CommandQueue{
+			commands: []IBasicCommand{
+				&SetRoleCommand{
+					commandImpl: commandImpl{self, other},
+					role:        other.role,
+				},
+				&SetRoleCommand{
+					commandImpl: commandImpl{other, self},
+					role:        villager,
+				},
+			},
+			priority:      3,
+			enableSession: 0,
+			tag:           nil,
+		}
+	}
 }
 
 func (l Lupin) GetName() string {
@@ -90,13 +135,15 @@ func (l Lupin) FilterTarget(player *Player) bool {
 	return player.Status == alive
 }
 
-type Shaman struct {
-	name string
-	self *Player
-}
-
-func (s Shaman) GetAction() Action {
-	return Trance
+func (s Shaman) GetCommand() CommandCreator {
+	return func(self *Player, other *Player) CommandQueue {
+		return CommandQueue{
+			commands:      []IBasicCommand{&KnowCommand{commandImpl{self, other}}},
+			priority:      1,
+			enableSession: 0,
+			tag:           nil,
+		}
+	}
 }
 
 func (s Shaman) GetName() string {
@@ -110,16 +157,16 @@ func (s Shaman) FilterTarget(player *Player) bool {
 func newRole(name string, self *Player) IRole {
 	switch name {
 	case "Werewolf":
-		return &Werewolf{name: name, self: self}
+		return werewolf
 	case "Knight":
-		return &Knight{name: name, self: self}
+		return knight
 	case "Diviner":
-		return &Diviner{self: self, name: name}
+		return diviner
 	case "Lupin":
-		return &Lupin{self: self, name: name}
+		return lupin
 	case "Shaman":
-		return &Shaman{self: self, name: name}
+		return shaman
 	default:
-		return &Villager{name: name}
+		return villager
 	}
 }

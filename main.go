@@ -10,7 +10,7 @@ type J jinrou.Jinrou
 func (j J) String() string {
 	s := ""
 	for _, p := range j.Players {
-		s += fmt.Sprintf("name:%s role:%s state:%d\n", p.GetName(), p.GetRole().GetName(), p.Status)
+		s += fmt.Sprintf("name:%s role:%s state:%d knowledge:%+v\n", p.GetName(), p.GetRole().GetName(), p.Status, p)
 	}
 	return s
 }
@@ -20,7 +20,7 @@ func main() {
 
 	printNames := func(player *jinrou.Player, players []*jinrou.Player) {
 		for i, p := range players {
-			if player.GetRole().FilterTarget(p) {
+			if player.GetRole().FilterTarget(p) && player != p {
 				fmt.Printf("%d: %s\n", i, p.GetName())
 			}
 		}
@@ -29,31 +29,22 @@ func main() {
 	//jinrou.NewMatchingServer()
 	//http.ListenAndServe(":8080", server)
 
-	names := []string{"John", "Alice", "Bob", "Jay", "Shawn"}
-	roles := []string{"Werewolf", "Knight", "Villager", "Villager", "Villager"}
+	names := []string{"John", "Alice", "Bob", "Jay", "Shawn", "Elen", "Charlse"}
+	roles := []string{"Werewolf", "Knight", "Villager", "Villager", "Villager", "Diviner", "Lupin"}
 	var players []*jinrou.Player
 	for i := 0; i < len(names); i++ {
 		players = append(players, jinrou.NewPlayer(names[i], roles[i]))
 	}
 	j := jinrou.NewJinrou(players)
-	var commands []jinrou.IActiveCommand
+	var commands jinrou.CommandList
 	for _, player := range j.Players {
-		fmt.Printf("%s, your turn.\n", player.GetName())
-		switch player.GetRole().GetName() {
-		case "Knight":
-			printNames(player, j.Players)
-			fmt.Printf("Who do you protect?: ")
-			var i int
-			_, _ = fmt.Scanf("%d", &i)
-			commands = append(commands, jinrou.NewActiveCommand(player, j.Players[i]))
-		case "Werewolf":
-			printNames(player, j.Players)
-			fmt.Printf("Who do you kill?: ")
-			var i int
-			_, _ = fmt.Scanf("%d", &i)
-			commands = append(commands, jinrou.NewActiveCommand(player, j.Players[i]))
-		case "Villager":
-			fmt.Printf("Sleep right now!\n")
+		fmt.Printf("%s, your turn. You are %s\n", player.GetName(), player.GetRole().GetName())
+		printNames(player, j.Players)
+		fmt.Printf("Who do you choose?: ")
+		var i int
+		_, _ = fmt.Scanf("%d", &i)
+		if i < len(players) {
+			commands = append(commands, player.GetRole().GetCommand()(player, players[i]))
 		}
 	}
 	fmt.Printf("the number of commands: %d\n", len(commands))
