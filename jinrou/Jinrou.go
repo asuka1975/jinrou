@@ -7,11 +7,8 @@ type Jinrou struct {
 	session ISession
 }
 
-func NewJinrou(name []string, role []string) *Jinrou {
-	j := &Jinrou{Players: make([]*Player, len(name))}
-	for i := 0; i < len(name); i++ {
-		j.Players[i] = NewPlayer(name[i], role[i])
-	}
+func NewJinrou(player []*Player) *Jinrou {
+	j := &Jinrou{Players: player}
 	return j
 }
 
