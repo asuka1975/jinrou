@@ -7,6 +7,8 @@ const (
 	Kill
 	Protect
 	Predict
+	Steal
+	Trance
 )
 
 var priorities = map[Action]int{
@@ -14,6 +16,8 @@ var priorities = map[Action]int{
 	Kill:    2,
 	Protect: 1,
 	Predict: 1,
+	Steal:   3,
+	Trance:  1,
 }
 
 type IActiveCommand interface {
@@ -72,10 +76,33 @@ func (c ProtectCommand) Execute() {
 		Cancel: func(command IActiveCommand) bool {
 			return command.GetAction() == Kill
 		},
-		Execute: func(self *Player, other *Player) {
-
-		},
+		Execute: func(self *Player, other *Player) {},
 	}
+}
+
+type PredictCommand struct {
+	activeCommandImpl
+}
+
+func (c PredictCommand) Execute() {
+	c.self.knowledge.Emplace(c.other)
+}
+
+type StealCommand struct {
+	activeCommandImpl
+}
+
+func (c StealCommand) Execute() {
+	c.self.role = c.other.role
+	c.other.role = newRole("Villager", c.other)
+}
+
+type TranceCommand struct {
+	activeCommandImpl
+}
+
+func (c TranceCommand) Execute() {
+	c.self.knowledge.Emplace(c.other)
 }
 
 func NewActiveCommand(self *Player, other *Player) IActiveCommand {
@@ -86,6 +113,12 @@ func NewActiveCommand(self *Player, other *Player) IActiveCommand {
 		return KillCommand{command}
 	case Protect:
 		return ProtectCommand{command}
+	case Predict:
+		return PredictCommand{command}
+	case Steal:
+		return StealCommand{command}
+	case Trance:
+		return TranceCommand{command}
 	default:
 		return NoneCommand{command}
 	}
