@@ -30,9 +30,12 @@ func main() {
 	//http.ListenAndServe(":8080", server)
 
 	names := []string{"John", "Alice", "Bob", "Jay", "Shawn"}
-	j := jinrou.NewJinrou(
-		names,
-		[]string{"Werewolf", "Knight", "Villager", "Villager", "Villager"})
+	roles := []string{"Werewolf", "Knight", "Villager", "Villager", "Villager"}
+	var players []*jinrou.Player
+	for i := 0; i < len(names); i++ {
+		players = append(players, jinrou.NewPlayer(names[i], roles[i]))
+	}
+	j := jinrou.NewJinrou(players)
 	var commands []jinrou.IActiveCommand
 	for _, player := range j.Players {
 		fmt.Printf("%s, your turn.\n", player.GetName())
