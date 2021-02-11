@@ -3,6 +3,13 @@ package jinrou
 type ISession interface {
 	Next() ISession
 	String() string
-	Act(actor string, target string)
-	Done()
 }
+
+type SessionID int
+
+const (
+	Morning SessionID = 1
+	Noon    SessionID = 2
+	Evening SessionID = 4
+	Night   SessionID = 8
+)

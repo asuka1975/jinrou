@@ -1,6 +1,8 @@
 package jinrou
 
-import "sort"
+import (
+	"sort"
+)
 
 type Jinrou struct {
 	Players []*Player
@@ -15,15 +17,19 @@ func NewJinrou(player []*Player) *Jinrou {
 func (j *Jinrou) Execute(commands CommandList) {
 	sort.Sort(commands)
 	for _, command := range commands {
-		self := command.GetSelf()
-		other := command.GetOther()
-		if other.command != nil {
-			if !other.command.Cancel(command) {
-				command.Execute()
+		passiveCalled := false
+		for _, basicCommand := range command.commands {
+			other := basicCommand.GetOther()
+			if !passiveCalled && other.command != nil {
+				if other.command.Cancel(command) {
+					other.command.Command.Execute()
+					break
+				}
+				basicCommand.Execute()
+				passiveCalled = true
+			} else {
+				basicCommand.Execute()
 			}
-			other.command.Execute(other, self)
-		} else {
-			command.Execute()
 		}
 	}
 	for _, player := range j.Players {

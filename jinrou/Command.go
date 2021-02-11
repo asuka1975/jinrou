@@ -20,111 +20,105 @@ var priorities = map[Action]int{
 	Trance:  1,
 }
 
-type IActiveCommand interface {
+type IBasicCommand interface {
 	Execute()
-	GetAction() Action
-	GetPriority() int
 	GetSelf() *Player
 	GetOther() *Player
 }
 
-type activeCommandImpl struct {
-	self     *Player
-	other    *Player
-	action   Action
-	priority int
+type commandImpl struct {
+	self  *Player
+	other *Player
 }
 
-func (c activeCommandImpl) GetAction() Action {
-	return c.action
-}
-
-func (c activeCommandImpl) GetPriority() int {
-	return c.priority
-}
-
-func (c activeCommandImpl) GetSelf() *Player {
+func (c *commandImpl) GetSelf() *Player {
 	return c.self
 }
 
-func (c activeCommandImpl) GetOther() *Player {
+func (c *commandImpl) GetOther() *Player {
 	return c.other
 }
 
 type NoneCommand struct {
-	activeCommandImpl
-}
-
-func (c NoneCommand) Execute() {
-
+	commandImpl
 }
 
 type KillCommand struct {
-	activeCommandImpl
+	commandImpl
 }
+
+type ReviveCommand struct {
+	commandImpl
+}
+
+type KnowCommand struct {
+	commandImpl
+}
+
+type InformCommand struct {
+	commandImpl
+}
+
+type SetRoleCommand struct {
+	commandImpl
+	role IRole
+}
+
+type SetPassiveCommand struct {
+	commandImpl
+	command *PassiveCommand
+}
+
+func (c NoneCommand) Execute() {}
 
 func (c KillCommand) Execute() {
 	c.other.Status = dead
 }
 
-type ProtectCommand struct {
-	activeCommandImpl
+func (c ReviveCommand) Execute() {
+	c.other.Status = alive
 }
 
-func (c ProtectCommand) Execute() {
-	c.other.command = &PassiveCommand{
-		Cancel: func(command IActiveCommand) bool {
-			return command.GetAction() == Kill
-		},
-		Execute: func(self *Player, other *Player) {},
-	}
-}
-
-type PredictCommand struct {
-	activeCommandImpl
-}
-
-func (c PredictCommand) Execute() {
+func (c KnowCommand) Execute() {
 	c.self.knowledge.Emplace(c.other)
 }
 
-type StealCommand struct {
-	activeCommandImpl
+func (c InformCommand) Execute() {
+	c.other.knowledge.Emplace(c.self)
 }
 
-func (c StealCommand) Execute() {
-	c.self.role = c.other.role
-	c.other.role = newRole("Villager", c.other)
+func (c SetRoleCommand) Execute() {
+	c.self.role = c.role
 }
 
-type TranceCommand struct {
-	activeCommandImpl
+func (c SetPassiveCommand) Execute() {
+	c.other.command = c.command
 }
 
-func (c TranceCommand) Execute() {
-	c.self.knowledge.Emplace(c.other)
+type CommandQueue struct {
+	commands      []IBasicCommand
+	priority      int
+	enableSession SessionID
+	tag           interface{}
 }
 
-func NewActiveCommand(self *Player, other *Player) IActiveCommand {
-	action := self.role.GetAction()
-	command := activeCommandImpl{self: self, other: other, action: action, priority: priorities[action]}
-	switch action {
-	case Kill:
-		return KillCommand{command}
-	case Protect:
-		return ProtectCommand{command}
-	case Predict:
-		return PredictCommand{command}
-	case Steal:
-		return StealCommand{command}
-	case Trance:
-		return TranceCommand{command}
-	default:
-		return NoneCommand{command}
+type CommandCreator func(*Player, *Player) CommandQueue
+
+func (c CommandQueue) Execute() {
+	for _, command := range c.commands {
+		command.Execute()
 	}
 }
 
-type CommandList []IActiveCommand
+func (c CommandQueue) GetPriority() int {
+	return c.priority
+}
+
+func (c CommandQueue) GetTag() interface{} {
+	return c.tag
+}
+
+type CommandList []CommandQueue
 
 func (c CommandList) Len() int {
 	return len(c)
@@ -139,6 +133,6 @@ func (c CommandList) Swap(i int, j int) {
 }
 
 type PassiveCommand struct {
-	Cancel  func(command IActiveCommand) bool
-	Execute func(self *Player, other *Player)
+	Cancel  func(command CommandQueue) bool
+	Command CommandQueue
 }
