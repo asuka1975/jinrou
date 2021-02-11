@@ -39,6 +39,10 @@ func (c *commandImpl) GetOther() *Player {
 	return c.other
 }
 
+type NoneCommand struct {
+	commandImpl
+}
+
 type KillCommand struct {
 	commandImpl
 }
@@ -64,6 +68,8 @@ type SetPassiveCommand struct {
 	commandImpl
 	command *PassiveCommand
 }
+
+func (c NoneCommand) Execute() {}
 
 func (c KillCommand) Execute() {
 	c.other.Status = dead
@@ -128,5 +134,5 @@ func (c CommandList) Swap(i int, j int) {
 
 type PassiveCommand struct {
 	Cancel  func(command CommandQueue) bool
-	Execute func(self *Player, other *Player)
+	Command CommandQueue
 }

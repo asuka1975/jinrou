@@ -19,11 +19,10 @@ func (j *Jinrou) Execute(commands CommandList) {
 	for _, command := range commands {
 		passiveCalled := false
 		for _, basicCommand := range command.commands {
-			self := basicCommand.GetSelf()
 			other := basicCommand.GetOther()
 			if !passiveCalled && other.command != nil {
 				if other.command.Cancel(command) {
-					other.command.Execute(self, other)
+					other.command.Command.Execute()
 					break
 				}
 				basicCommand.Execute()

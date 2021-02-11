@@ -70,7 +70,12 @@ func (k Knight) GetCommand() CommandCreator {
 						action, ok := command.tag.(Action)
 						return ok && action == Kill
 					},
-					Execute: func(self *Player, other *Player) {},
+					Command: CommandQueue{
+						commands:      []IBasicCommand{&NoneCommand{}},
+						priority:      0,
+						enableSession: 0,
+						tag:           nil,
+					},
 				},
 			}},
 			priority:      1,
