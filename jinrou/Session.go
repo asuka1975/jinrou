@@ -1,5 +1,7 @@
 package jinrou
 
+import "sort"
+
 type ISession interface {
 	Next() ISession
 	PushCommand(queue CommandQueue)
@@ -17,94 +19,111 @@ const (
 	Night   SessionID = 8
 )
 
-type MorningSession struct {
+type sessionImpl struct {
+	jinrou *Jinrou
 }
 
-func (s MorningSession) Next() ISession {
+type MorningSession struct {
+	sessionImpl
+}
+
+func (s *MorningSession) Next() ISession {
 	return &NoonSession{}
 }
 
-func (s MorningSession) PushCommand(queue CommandQueue) {
+func (s *MorningSession) PushCommand(queue CommandQueue) {
 
 }
 
-func (s MorningSession) End() {
+func (s *MorningSession) End() {
 
 }
 
-func (s MorningSession) Interactive() bool {
+func (s *MorningSession) Interactive() bool {
 	return false
 }
 
-func (s MorningSession) GetID() SessionID {
+func (s *MorningSession) GetID() SessionID {
 	return Morning
 }
 
 type NoonSession struct {
+	sessionImpl
 }
 
-func (s NoonSession) Next() ISession {
+func (s *NoonSession) Next() ISession {
 	return &EveningSession{}
 }
 
-func (s NoonSession) PushCommand(queue CommandQueue) {
+func (s *NoonSession) PushCommand(queue CommandQueue) {
 
 }
 
-func (s NoonSession) End() {
+func (s *NoonSession) End() {
 
 }
 
-func (s NoonSession) Interactive() bool {
+func (s *NoonSession) Interactive() bool {
 	return true
 }
 
-func (s NoonSession) GetID() SessionID {
+func (s *NoonSession) GetID() SessionID {
 	return Noon
 }
 
 type EveningSession struct {
+	sessionImpl
 }
 
-func (s EveningSession) Next() ISession {
+func (s *EveningSession) Next() ISession {
 	return &NightSession{}
 }
 
-func (s EveningSession) PushCommand(queue CommandQueue) {
+func (s *EveningSession) PushCommand(queue CommandQueue) {
 
 }
 
-func (s EveningSession) End() {
+func (s *EveningSession) End() {
 
 }
 
-func (s EveningSession) Interactive() bool {
+func (s *EveningSession) Interactive() bool {
 	return false
 }
 
-func (s EveningSession) GetID() SessionID {
+func (s *EveningSession) GetID() SessionID {
 	return Evening
 }
 
 type NightSession struct {
+	sessionImpl
+	commands CommandList
 }
 
-func (s NightSession) Next() ISession {
+func (s *NightSession) Next() ISession {
 	return &MorningSession{}
 }
 
-func (s NightSession) PushCommand(queue CommandQueue) {
-
+func (s *NightSession) PushCommand(queue CommandQueue) {
+	s.commands = append(s.commands, queue)
 }
 
-func (s NightSession) End() {
-
+func (s *NightSession) End() {
+	ctx := newContext(s.jinrou.Players)
+	sort.Sort(s.commands)
+	s.commands = append(s.commands, newCommandQueue([]iBasicCommand{ElectCommand{}, KillCommand{}}, 0, Night, nil))
+	for _, command := range s.commands {
+		command.Execute(ctx)
+	}
+	for _, player := range s.jinrou.Players {
+		player.command = nil
+	}
 }
 
-func (s NightSession) Interactive() bool {
+func (s *NightSession) Interactive() bool {
 	return false
 }
 
-func (s NightSession) GetID() SessionID {
+func (s *NightSession) GetID() SessionID {
 	return Night
 }

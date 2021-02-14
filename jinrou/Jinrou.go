@@ -6,11 +6,14 @@ import (
 
 type Jinrou struct {
 	Players []*Player
-	session ISession
+	Session ISession
 }
 
 func NewJinrou(player []*Player) *Jinrou {
+	session := NightSession{commands: CommandList{}}
 	j := &Jinrou{Players: player}
+	session.jinrou = j
+	j.Session = &session
 	return j
 }
 

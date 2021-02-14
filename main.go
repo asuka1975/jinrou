@@ -36,7 +36,6 @@ func main() {
 		players = append(players, jinrou.NewPlayer(names[i], roles[i]))
 	}
 	j := jinrou.NewJinrou(players)
-	var commands jinrou.CommandList
 	for _, player := range j.Players {
 		fmt.Printf("%s, your turn. You are %s\n", player.GetName(), player.GetRole().GetName())
 		printNames(player, j.Players)
@@ -44,10 +43,9 @@ func main() {
 		var i int
 		_, _ = fmt.Scanf("%d", &i)
 		if i < len(players) {
-			commands = append(commands, player.GetRole().GetCommand(player, players[i]))
+			j.Session.PushCommand(player.GetRole().GetCommand(player, players[i]))
 		}
 	}
-	fmt.Printf("the number of commands: %d\n", len(commands))
-	j.Execute(commands)
+	j.Session.End()
 	fmt.Println(J(*j))
 }
