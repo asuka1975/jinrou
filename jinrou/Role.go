@@ -1,7 +1,7 @@
 package jinrou
 
 type IRole interface {
-	GetCommand() CommandCreator
+	GetCommand(self *Player, other *Player) CommandQueue
 	GetName() string
 	FilterTarget(player *Player) bool
 }
@@ -22,15 +22,8 @@ const (
 	shaman   Shaman   = 5
 )
 
-func (v Villager) GetCommand() CommandCreator {
-	return func(self *Player, other *Player) CommandQueue {
-		return CommandQueue{
-			commands:      nil,
-			priority:      0,
-			enableSession: Night,
-			tag:           nil,
-		}
-	}
+func (v Villager) GetCommand(self *Player, other *Player) CommandQueue {
+	return newCommandQueue(nil, 0, Night, nil)
 }
 
 func (v Villager) GetName() string {
@@ -41,15 +34,10 @@ func (v Villager) FilterTarget(_ *Player) bool {
 	return false
 }
 
-func (w Werewolf) GetCommand() CommandCreator {
-	return func(self *Player, other *Player) CommandQueue {
-		return CommandQueue{
-			commands:      []IBasicCommand{&KillCommand{commandImpl{self, other}}},
-			priority:      2,
-			enableSession: Night,
-			tag:           Kill,
-		}
-	}
+func (w Werewolf) GetCommand(self *Player, other *Player) CommandQueue {
+	return newCommandQueue(
+		[]iBasicCommand{VoteCommand{}},
+		1, Night, nil, self, other)
 }
 
 func (w Werewolf) GetName() string {
@@ -60,29 +48,24 @@ func (w Werewolf) FilterTarget(player *Player) bool {
 	return player.role.GetName() != "Werewolf" && player.Status == alive
 }
 
-func (k Knight) GetCommand() CommandCreator {
-	return func(self *Player, other *Player) CommandQueue {
-		return CommandQueue{
-			commands: []IBasicCommand{&SetPassiveCommand{
-				commandImpl: commandImpl{self, other},
-				command: &PassiveCommand{
-					Cancel: func(command CommandQueue) bool {
-						action, ok := command.tag.(Action)
-						return ok && action == Kill
-					},
-					Command: CommandQueue{
-						commands:      []IBasicCommand{&NoneCommand{}},
-						priority:      0,
-						enableSession: 0,
-						tag:           nil,
-					},
+func (k Knight) GetCommand(self *Player, other *Player) CommandQueue {
+	return newCommandQueue(
+		[]iBasicCommand{SetPassiveCommand{
+			command: &PassiveCommand{
+				Cancel: func(command iBasicCommand) bool {
+					switch command.(type) {
+					case KillCommand:
+						return true
+					default:
+						return false
+					}
 				},
-			}},
-			priority:      1,
-			enableSession: 0,
-			tag:           nil,
-		}
-	}
+				Command: newCommandQueue(
+					[]iBasicCommand{NoneCommand{}},
+					1, Night, nil, other),
+			},
+		}},
+		1, Night, nil, self, other)
 }
 
 func (k Knight) GetName() string {
@@ -93,15 +76,10 @@ func (k Knight) FilterTarget(player *Player) bool {
 	return player.Status == alive
 }
 
-func (d Diviner) GetCommand() CommandCreator {
-	return func(self *Player, other *Player) CommandQueue {
-		return CommandQueue{
-			commands:      []IBasicCommand{&KnowCommand{commandImpl{self, other}}},
-			priority:      1,
-			enableSession: 0,
-			tag:           nil,
-		}
-	}
+func (d Diviner) GetCommand(self *Player, other *Player) CommandQueue {
+	return newCommandQueue(
+		[]iBasicCommand{KnowCommand{}},
+		1, Night, nil, self, other)
 }
 
 func (d Diviner) GetName() string {
@@ -112,24 +90,10 @@ func (d Diviner) FilterTarget(player *Player) bool {
 	return player.Status == alive
 }
 
-func (l Lupin) GetCommand() CommandCreator {
-	return func(self *Player, other *Player) CommandQueue {
-		return CommandQueue{
-			commands: []IBasicCommand{
-				&SetRoleCommand{
-					commandImpl: commandImpl{self, other},
-					role:        other.role,
-				},
-				&SetRoleCommand{
-					commandImpl: commandImpl{other, self},
-					role:        villager,
-				},
-			},
-			priority:      3,
-			enableSession: 0,
-			tag:           nil,
-		}
-	}
+func (l Lupin) GetCommand(self *Player, other *Player) CommandQueue {
+	return newCommandQueue(
+		[]iBasicCommand{SetRoleCommand{villager}, SetRoleCommand{other.role}},
+		3, Night, nil, self, other)
 }
 
 func (l Lupin) GetName() string {
@@ -140,15 +104,8 @@ func (l Lupin) FilterTarget(player *Player) bool {
 	return player.Status == alive
 }
 
-func (s Shaman) GetCommand() CommandCreator {
-	return func(self *Player, other *Player) CommandQueue {
-		return CommandQueue{
-			commands:      []IBasicCommand{&KnowCommand{commandImpl{self, other}}},
-			priority:      1,
-			enableSession: 0,
-			tag:           nil,
-		}
-	}
+func (s Shaman) GetCommand(self *Player, other *Player) CommandQueue {
+	return newCommandQueue([]iBasicCommand{InformCommand{}}, 1, Night, nil, other, self)
 }
 
 func (s Shaman) GetName() string {
