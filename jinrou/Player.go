@@ -26,7 +26,7 @@ func (p *Player) GetRole() IRole {
 
 func NewPlayer(name string, role string) *Player {
 	p := &Player{name: name, Status: alive, command: nil}
-	p.role = newRole(role, p)
+	p.role = newRole(role)
 	return p
 }
 
