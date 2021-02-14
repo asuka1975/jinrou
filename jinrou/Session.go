@@ -52,7 +52,7 @@ type NoonSession struct {
 }
 
 func (s *NoonSession) Next() ISession {
-	return &EveningSession{}
+	return &EveningSession{sessionImpl{jinrou: s.jinrou}, CommandList{}}
 }
 
 func (s *NoonSession) PushCommand(queue CommandQueue) {
@@ -74,18 +74,23 @@ func (s *NoonSession) GetID() SessionID {
 
 type EveningSession struct {
 	sessionImpl
+	commands CommandList
 }
 
 func (s *EveningSession) Next() ISession {
-	return &NightSession{}
+	return &NightSession{sessionImpl{jinrou: s.jinrou}, CommandList{}}
 }
 
 func (s *EveningSession) PushCommand(queue CommandQueue) {
-
+	s.commands = append(s.commands, queue)
 }
 
 func (s *EveningSession) End() {
-
+	ctx := newContext(s.jinrou.Players)
+	s.commands = append(s.commands, newCommandQueue([]iBasicCommand{ElectCommand{}, KillCommand{}}, 0, Evening, nil))
+	for _, command := range s.commands {
+		command.Execute(ctx)
+	}
 }
 
 func (s *EveningSession) Interactive() bool {
