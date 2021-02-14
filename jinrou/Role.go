@@ -22,7 +22,7 @@ const (
 	shaman   Shaman   = 5
 )
 
-func (v Villager) GetCommand(self *Player, other *Player) CommandQueue {
+func (v Villager) GetCommand(*Player, *Player) CommandQueue {
 	return newCommandQueue(nil, 0, Night, nil)
 }
 
@@ -116,7 +116,7 @@ func (s Shaman) FilterTarget(player *Player) bool {
 	return player.Status == dead
 }
 
-func newRole(name string, self *Player) IRole {
+func newRole(name string) IRole {
 	switch name {
 	case "Werewolf":
 		return werewolf

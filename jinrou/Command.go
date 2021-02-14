@@ -6,24 +6,6 @@ import (
 
 type Action int
 
-const (
-	None Action = iota
-	Kill
-	Protect
-	Predict
-	Steal
-	Trance
-)
-
-var priorities = map[Action]int{
-	None:    0,
-	Kill:    2,
-	Protect: 1,
-	Predict: 1,
-	Steal:   3,
-	Trance:  1,
-}
-
 type context struct {
 	target  Stack
 	station pollingStation
@@ -69,18 +51,18 @@ type SetPassiveCommand struct {
 	command *PassiveCommand
 }
 
-func (c NoneCommand) execute(ctx *context)        {}
-func (c NoneCommand) target(ctx *context) *Player { return nil }
+func (c NoneCommand) execute(*context)        {}
+func (c NoneCommand) target(*context) *Player { return nil }
 
 func (c PushCommand) execute(ctx *context) {
 	ctx.target.Push(c.player)
 }
-func (c PushCommand) target(ctx *context) *Player { return nil }
+func (c PushCommand) target(*context) *Player { return nil }
 
 func (c PopCommand) execute(ctx *context) {
 	_, _ = ctx.target.Pop()
 }
-func (c PopCommand) target(ctx *context) *Player { return nil }
+func (c PopCommand) target(*context) *Player { return nil }
 
 func (c KillCommand) execute(ctx *context) {
 	p, err := ctx.target.Pop()
@@ -160,7 +142,7 @@ func (c VoteCommand) target(ctx *context) *Player {
 func (c ElectCommand) execute(ctx *context) {
 	ctx.target.Push(ctx.station.voted())
 }
-func (c ElectCommand) target(ctx *context) *Player { return nil }
+func (c ElectCommand) target(*context) *Player { return nil }
 
 func (c SetRoleCommand) execute(ctx *context) {
 	p, err := ctx.target.Pop()
