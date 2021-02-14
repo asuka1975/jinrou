@@ -56,7 +56,8 @@ func (s *NoonSession) Next() ISession {
 }
 
 func (s *NoonSession) PushCommand(queue CommandQueue) {
-
+	ctx := newContext(s.jinrou.Players)
+	queue.Execute(ctx)
 }
 
 func (s *NoonSession) End() {
