@@ -43,9 +43,9 @@ func main() {
 		var i int
 		_, _ = fmt.Scanf("%d", &i)
 		if i < len(players) {
-			j.Session.PushCommand(player.GetRole().GetCommand(player, players[i]))
+			j.GetSession().PushCommand(player.GetRole().GetCommand(player, players[i]))
 		}
 	}
-	j.Session.End()
+	j.GetSession().End()
 	fmt.Println(J(*j))
 }
