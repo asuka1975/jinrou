@@ -15,22 +15,11 @@ func NewJinrou(player []*Player) *Jinrou {
 }
 
 func (j *Jinrou) Execute(commands CommandList) {
+	ctx := newContext(j.Players)
 	sort.Sort(commands)
+	commands = append(commands, newCommandQueue([]iBasicCommand{ElectCommand{}, KillCommand{}}, 0, Night, Kill))
 	for _, command := range commands {
-		passiveCalled := false
-		for _, basicCommand := range command.commands {
-			other := basicCommand.GetOther()
-			if !passiveCalled && other.command != nil {
-				if other.command.Cancel(command) {
-					other.command.Command.Execute()
-					break
-				}
-				basicCommand.Execute()
-				passiveCalled = true
-			} else {
-				basicCommand.Execute()
-			}
-		}
+		command.Execute(ctx)
 	}
 	for _, player := range j.Players {
 		player.command = nil

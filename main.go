@@ -44,7 +44,7 @@ func main() {
 		var i int
 		_, _ = fmt.Scanf("%d", &i)
 		if i < len(players) {
-			commands = append(commands, player.GetRole().GetCommand()(player, players[i]))
+			commands = append(commands, player.GetRole().GetCommand(player, players[i]))
 		}
 	}
 	fmt.Printf("the number of commands: %d\n", len(commands))
