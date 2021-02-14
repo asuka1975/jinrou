@@ -17,7 +17,7 @@ func NewJinrou(player []*Player) *Jinrou {
 func (j *Jinrou) Execute(commands CommandList) {
 	ctx := newContext(j.Players)
 	sort.Sort(commands)
-	commands = append(commands, newCommandQueue([]iBasicCommand{ElectCommand{}, KillCommand{}}, 0, Night, Kill))
+	commands = append(commands, newCommandQueue([]iBasicCommand{ElectCommand{}, KillCommand{}}, 0, Night, nil))
 	for _, command := range commands {
 		command.Execute(ctx)
 	}
